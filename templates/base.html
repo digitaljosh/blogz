@@ -10,6 +10,10 @@
             width: 100%em;
             text-align: center;
         }
+        span {
+            line-height: 2.5em;
+            padding: .5em;
+        }
         #main-title {
             text-align: center;
             font-family: Cambria, Cochin, Georgia, Times, Times New Roman, serif;
@@ -20,41 +24,41 @@
             font-family: Cambria, Cochin, Georgia, Times, Times New Roman, serif;
             font-size: 5em;
         }
-        .error {
-            color: red;
-            font-style: italic;
-        }
-        #main-page-link {
-            line-height: 2.5em;
-            padding: .5em;
-        }
-        label {
-            font-family: Cambria, Cochin, Georgia, Times, Times New Roman, serif;
-        }   
-        h2 {
-            font-family: Cambria, Cochin, Georgia, Times, Times New Roman, serif;
-        }
-        p {
-            font-family: Cambria, Cochin, Georgia, Times, Times New Roman, serif;
-        }
         #main-title-box, #newpost-title-box {
             margin-top: -2em;
         }
         #main-box {
             margin-top: -1em;
         }
+        label, h2, p {
+            font-family: Cambria, Cochin, Georgia, Times, Times New Roman, serif;
+        }   
+
+        
+        
         
     
     </style>
 
 <body>
     <div id="header">
-        <span id="main-page-link">
+        <span>
         <a href="/">Main Blog Page</a>
         </span>
-        <span id="main-newpost-link">
+        <span>
         <a href="/newpost">Add a Blog Entry</a>
         </span>
+    </div>
+
+    <div style='float: right'>
+        {% if 'user' in session %}
+            {{ session['user'] }}
+            <form action="/logout" method="post">
+            <input type="submit" value="Log Out" />
+            </form>
+        {% else %}
+            <a href="login">login</a> | <a href="signup">signup</a>
+        {% endif %}
     </div>
     
     <div id="background">

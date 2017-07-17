@@ -43,12 +43,16 @@ class User(db.Model):
 #TODO flash messages
 
 
-#@app.route('/signup', methods=['POST', 'GET'])
-#def signup():
+@app.route('/signup', methods=['POST', 'GET'])
+def signup():
+
+    return render_template('signup.html')
 
 
-#@app.route('/login', methods=['POST', 'GET'])
-#def login():
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+
+    return render_template('login.html')
 
 
 #@app.route('/index', methods=['POST', 'GET'])

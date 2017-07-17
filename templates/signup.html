@@ -2,7 +2,32 @@
 
 {% block content %}
 
-
+<h2>Signup For New Blogz Account</h2>
+<div>
+    <form class="form" action="/confirmation" method="post">
+        <table>
+            <tr>
+                <td><label>Email</label></td>
+                <td>
+                    <input type="text" name="email" value="{{ request.form['email'] }}"/>
+                </td>
+            </tr>
+            <tr>
+                <td><label>Password</label></td>
+                <td>
+                    <input type="password" name="password" value=""/>
+                </td>
+            </tr>
+            <tr>
+                <td><label>Verify Password</label></td>
+                <td>
+                    <input type="password" name="verify" value=""/>
+                </td>
+            </tr>
+        </table>
+        <input type="submit" value="Submit"/>
+    </form>
+</div>
 
 
 
