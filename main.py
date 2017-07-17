@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template, session
+from flask import Flask, request, redirect, render_template, session, flash
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -6,6 +6,7 @@ app.config['DEBUG'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://blogz:blogz@localhost:8889/blogz'
 app.config['SQLALCHEMY_ECHO'] = True
 db = SQLAlchemy(app)
+app.secret_key = 't4390lib8496vc'
 
 
 
@@ -76,7 +77,7 @@ def index():
         
         # if there are no query params in GET request, display ALL blogs
         blog = Blog.query.all() # gets all blog posts from db
-        main_title = "Build a Blog" 
+        main_title = "Blogz" 
         return render_template('home.html', blog=blog, main_title=main_title) # renders template on /home with ALL blog posts
         
         
@@ -95,10 +96,12 @@ def index():
             return redirect("/?id=" + str(new_post.id)) # redirects user to home page that only displays the newly submitted post
 
         if body == "": # shows error if no input for blog body
-            return render_template('/newpost.html', error_body=error_body)
+            flash('Please fill out body')
+            return redirect('/newpost')
 
         if title == "": # shows error if no input for blog title
-            return render_template('/newpost.html', error_title=error_title)
+            flash('Please fill in the title')
+            return redirect('/newpost')
 
 
 

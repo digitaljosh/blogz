@@ -10,7 +10,7 @@
         displays ALL db blog posts on home page 
     -->
     <div id="main-box"> 
-    {% if main_title == "Build a Blog" %}
+    {% if main_title == "Blogz" %}
         {% for b in blog %}
         <h2><a href="/?id={{ b.id }}">{{ b.title }}</a></h2>
         <p>{{ b.body }}</p>
