@@ -3,23 +3,60 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://build-a-blog:buildablog@localhost:8889/build-a-blog'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://blogz:blogz@localhost:8889/blogz'
 app.config['SQLALCHEMY_ECHO'] = True
 db = SQLAlchemy(app)
+
+
+
 
 class Blog(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120))
     body = db.Column(db.String(600))
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    def __init__(self, title, body):
+    def __init__(self, title, body, owner):
         self.title = title
         self.body = body
+        self.owner = owner
+
+
+class User(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(40))
+    password = db.Column(db.String(40))
+    blogs = db.relationship('Blog', backref='owner')
+
+    def __init__(self, username, password):
+        self.username = username
+        self.password = password
+
+
+
 
 
 #TODO add helper functions, clean up /home
 #TODO flash messages
+
+
+#@app.route('/signup', methods=['POST', 'GET'])
+#def signup():
+
+
+#@app.route('/login', methods=['POST', 'GET'])
+#def login():
+
+
+#@app.route('/index', methods=['POST', 'GET'])
+#def index():
+
+
+#def logout():
+    # handles a POST request to /logout and redirects to /blog after deleting username
+    # from session
 
 
 @app.route('/', methods=['POST', 'GET'])
@@ -72,6 +109,8 @@ def newpost():
     route for newpost, renders newpost template
     
     '''
+# TODO: consider that a user must be authenticated and in session
+#       in order to access /newpost and add a blog entry.
 
     return render_template('newpost.html')
 
