@@ -23,6 +23,9 @@ class Blog(db.Model):
         self.body = body
         self.owner = owner
 
+    def __repr__(self):
+        return '<Blog %r>' % (self.title, self.body)
+
 
 class User(db.Model):
 
@@ -35,12 +38,28 @@ class User(db.Model):
         self.username = username
         self.password = password
 
+    def __repr__(self):
+        return '<User %r>' % self.username
+
 
 
 
 
 #TODO add helper functions, clean up /home
 #TODO flash messages
+
+
+@app.before_request
+def require_login():
+    allowed_routes = ['login', 'signup', 'index']
+    if request.endpoint not in allowed_routes and 'email' not in session:
+        return redirect('/login')
+
+
+@app.route('/logout')
+def logout():
+    del session['email']
+    return redirect('/')
 
 
 @app.route('/signup', methods=['POST', 'GET'])
@@ -77,12 +96,12 @@ def index():
         if blog_id: # if query params exist...
             blog = Blog.query.filter_by(id=blog_id).first() # matches query param blog id with blog post in db 
             #selected_blog = Blog.query.filter_by(id=blog_id).first() 
-            return render_template('home.html', blog_id=blog_id, body=blog.body, main_title=blog.title) # renders template with single blog post
+            return render_template('index.html', blog_id=blog_id, body=blog.body, main_title=blog.title) # renders template with single blog post
         
         # if there are no query params in GET request, display ALL blogs
         blog = Blog.query.all() # gets all blog posts from db
         main_title = "Blogz" 
-        return render_template('home.html', blog=blog, main_title=main_title) # renders template on /home with ALL blog posts
+        return render_template('index.html', blog=blog, main_title=main_title) # renders template on /home with ALL blog posts
         
         
 
