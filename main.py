@@ -51,16 +51,17 @@ class User(db.Model):
 
 @app.before_request
 def require_login():
-    allowed_routes = ['login', 'signup', 'index', 'all_posts']
+    allowed_routes = ['login', 'signup', 'index', 'all_posts', 'logout']
     if request.endpoint not in allowed_routes and 'email' not in session:
         return redirect('/login')
 
 
-@app.route('/logout')
+@app.route('/logout', methods=['POST'])
 def logout():
     # handles a POST request to /logout and redirects to /blog after deleting username
     # from session
-    del session['email']
+    del session['username']
+    flash('logged out')
     return redirect('/')
 
 
@@ -79,11 +80,23 @@ def signup():
 @app.route('/login', methods=['POST', 'GET'])
 def login():
 
-    # display links (home, all posts, etc)
-    # display 'Login' with inputs for 'username' and 'password' and 'submit' button
-    # display 'Don't have an account?' with a link to 'create one' that redirects to /signup
+    # if GET request display login.html
+    # if POST request, validate and authorize and add user to session and redirect to /newpost
+
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username).first()
+        if user and user.password == password:
+            session['username'] = username
+            flash("Logged in")
+            print(session)
+            return redirect('/newpost')
+        else:
+            flash('User password incorrect, or user does not exist', 'error')
 
     return render_template('login.html')
+
 
 
 @app.route('/blog', methods=['GET'])
@@ -96,7 +109,6 @@ def all_posts():
 
     
     blog = Blog.query.all() # gets all blog posts from db
-    #main_title = "Blogz Posts" 
     return render_template('index.html', blog=blog, main_title="Blogz Posts")
 
 
@@ -112,18 +124,22 @@ def index():
     route for homepage, checks against GET or POST requests, validates user input, displays applicable errors, submits info to db if no errors
     
     '''
+
     # render index.html for this route 
     # display links (home, all posts, new post, login, logout)
     # display "blog users!" with a list of all users
     # users listed are links that direct to /blog?user=[user]
 
-    #if request.method=='GET': # checks for GET request
-     #   blog_id = request.args.get('id') # grabs blog id from query params
-      #  if blog_id: # if query params exist...
-       #     blog = Blog.query.filter_by(id=blog_id).first() # matches query param blog id with blog post in db 
-        #    return render_template('index.html', blog_id=blog_id, body=blog.body, main_title=blog.title) # renders template with single blog post
+    if request.method=='GET': # checks for GET request
+        user_id = request.args.get('id') # grabs blog id from query params
+        if user_id: # if query params exist...
+            user = User.query.filter_by(id=user_id).first() # matches query param blog id with blog post in db
+            blogs = Blog.query.filter_by(id=user_id).all() 
+            return render_template('singleUser.html', user=user, blogs=blogs)
+
+
         
-        # display ALL users
+    # display ALL users
     users = User.query.all() # gets all blog posts from db
     #main_title="Blogz Users"
     return render_template('index.html', users=users, main_title="Blogz Users") # renders template on / with ALL blog posts
@@ -160,8 +176,7 @@ def newpost():
     route for newpost, renders newpost template
     
     '''
-# if user not in session redirect to login, this can be handled by before.request
-# if user in session....
+
 # display links (home, all posts, etc)
 # display 'new post' with inputs for 'title' and 'post' (body) and 'submit' button
 # after 'submit' redirect to individual post /blog?id=[blog_id]
