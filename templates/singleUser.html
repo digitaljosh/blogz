@@ -10,9 +10,10 @@
 {% for b in blogs %}
     <h2><a href="/?id={{ b.id }}">{{ b.title }}</a></h2>
     <p>{{ b.body }}</p>
-    <p>written by {{ user.username }}</p>
+    <p>written by {{ username }}</p>
     <hr>
 {% endfor %}
+
 
 
 

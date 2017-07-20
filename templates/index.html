@@ -15,13 +15,15 @@
     {% endfor %}
 </div>
 
-  
+  {#
     {% for b in blog %}
     <h3><a href="/?id={{ blog_id }}">{{ b.title }}</a></h3>
     <p>{{ b.body }}</p>
-    <p>written by {{username}}</p>
+    {% endfor %}
+    {% for u in users %}
+    <p>written by {{ u.username }}</p>
     <hr>
     {% endfor %}
-
+#}
 
 {% endblock %}

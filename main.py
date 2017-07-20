@@ -116,7 +116,7 @@ def login():
 
 
 
-@app.route('/blog', methods=['GET'])
+@app.route('/blog', methods=['GET', 'POST'])
 def all_posts():
     # display links (home, all posts, new post, login, logout)
     # display "blog posts!" with a list of all posts
@@ -124,9 +124,15 @@ def all_posts():
     # Title links to individual post at /blog?id=[blog_id]
     # username links to page of all users posts /blog?user=[username] (use singUser.html template to render)
 
+    if request.method == 'GET':
+        blog_id = request.args.get('id') # grabs blog id from query params
+        if blog_id: # if query params exist...
+            blog = Blog.query.filter_by(id=blog_id).all() # matches query param blog id with blog post in db 
+            return render_template('singleUser.html', blog_id=blog_id, body=blog.body, main_title=blog.title)
     
-    blog = Blog.query.all() # gets all blog posts from db
-    return render_template('index.html', blog=blog, main_title="Blogz Posts")
+    blogs = Blog.query.all() # gets all blog posts from db
+    users = User.query.all() 
+    return render_template('blog.html', blogs=blogs, users=users, main_title="Blogz Posts")
 
 
 
@@ -151,14 +157,13 @@ def index():
         user_id = request.args.get('id') # grabs blog id from query params
         if user_id: # if query params exist...
             user = User.query.filter_by(id=user_id).first() # matches query param blog id with blog post in db
-            blogs = Blog.query.filter_by(id=user_id).all() 
+            blogs = Blog.query.filter_by(owner_id=user_id).all() 
             return render_template('singleUser.html', user=user, blogs=blogs)
 
     # TODO: Is this where I need to handle the display of single posts after /newpost?
         
     # display ALL users
     users = User.query.all() # gets all blog posts from db
-    #main_title="Blogz Users"
     return render_template('index.html', users=users, main_title="Blogz Users") # renders template on / with ALL blog posts
         
         
@@ -175,14 +180,6 @@ def index():
          #   db.session.add(new_post) # adding new blog post to session
           #  db.session.commit() # committing new blog post to db
            # return redirect("/?id=" + str(new_post.id)) # redirects user to home page that only displays the newly submitted post
-
-      #  if body == "": # shows error if no input for blog body
-       #     flash('Please fill out body')
-        #    return redirect('/newpost')
-
-        #if title == "": # shows error if no input for blog title
-         #   flash('Please fill in the title')
-          #  return redirect('/newpost')
 
 
 
@@ -204,13 +201,13 @@ def newpost():
             flash('Please enter a title')
             return redirect('/newpost')
         if len(body) < 2:
-            flash('Please enter post')
+            flash('Please enter body')
             return redirect('/newpost')
-        blog = Blog(title=title, body=body, owner=owner)
+        blog = Blog(title=title,body=body,owner=owner)
         db.session.add(blog)
         db.session.commit()
-        blog_id = str(blog.id)
-        url = '/blog?id=' + str(blog_id)
+        #blog_id = str(blog.id)
+        url = '/blog?id=' + str(blog.id)
         return redirect(url)
 
     # TODO: Need to troubleshoot /newpost, right now it's posting with all other blogs
