@@ -5,25 +5,23 @@
     
 
     <!-- 
-        displays ALL db blog posts on home page 
+        displays ALL users on home page 
     -->
 <div id="main-box">    
     {% for u in users %}
         <ul>
             <li><h3><a href="/?id={{ u.id }}">{{ u.username }}</a></h3></li>
         </ul>
-       {# <p>{{ b.body }}</p> #}
     {% endfor %}
 </div>
 
-    {# 
-        displays single blog entry on home page after submitting new blog 
-    
-    {% else %}
-    <h2><a href="/?id={{ blog_id }}">{{ main_title }}</a></h2>
-    <p>{{ body }}</p>
+  
+    {% for b in blog %}
+    <h3><a href="/?id={{ blog_id }}">{{ b.title }}</a></h3>
+    <p>{{ b.body }}</p>
+    <p>written by {{username}}</p>
     <hr>
-    {% endif %}
-    #}
+    {% endfor %}
+
 
 {% endblock %}

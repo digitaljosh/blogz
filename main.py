@@ -91,8 +91,6 @@ def signup():
         return redirect('/newpost')
 
 
-    # if input is validated and authorized store user in session and redirect to "/newpost"
-
     return render_template('signup.html')
 
 
@@ -149,14 +147,14 @@ def index():
     # display "blog users!" with a list of all users
     # users listed are links that direct to /blog?user=[user]
 
-    if request.method=='GET': # checks for GET request
+    if request.method == 'GET': # checks for GET request
         user_id = request.args.get('id') # grabs blog id from query params
         if user_id: # if query params exist...
             user = User.query.filter_by(id=user_id).first() # matches query param blog id with blog post in db
             blogs = Blog.query.filter_by(id=user_id).all() 
             return render_template('singleUser.html', user=user, blogs=blogs)
 
-
+    # TODO: Is this where I need to handle the display of single posts after /newpost?
         
     # display ALL users
     users = User.query.all() # gets all blog posts from db
@@ -196,9 +194,30 @@ def newpost():
     
     '''
 
-# display links (home, all posts, etc)
-# display 'new post' with inputs for 'title' and 'post' (body) and 'submit' button
 # after 'submit' redirect to individual post /blog?id=[blog_id]
+
+    if request.method == 'POST':
+        title = request.form['title']
+        body = request.form['body']
+        owner = User.query.filter_by(username=session['username']).first()
+        if len(title) < 1:
+            flash('Please enter a title')
+            return redirect('/newpost')
+        if len(body) < 2:
+            flash('Please enter post')
+            return redirect('/newpost')
+        blog = Blog(title=title, body=body, owner=owner)
+        db.session.add(blog)
+        db.session.commit()
+        blog_id = str(blog.id)
+        url = '/blog?id=' + str(blog_id)
+        return redirect(url)
+
+    # TODO: Need to troubleshoot /newpost, right now it's posting with all other blogs
+
+
+
+
 
     return render_template('newpost.html', main_title="Add a Blog Post")
 
