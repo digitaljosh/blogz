@@ -4,12 +4,12 @@
 
 <h2>Signup For New Blogz Account</h2>
 <div>
-    <form class="form" action="/confirmation" method="post">
+    <form class="form" action="/signup" method="post">
         <table>
             <tr>
-                <td><label>Email</label></td>
+                <td><label>Username</label></td>
                 <td>
-                    <input type="text" name="email" value="{{ request.form['email'] }}"/>
+                    <input type="text" name="username" value="{{ request.form['username'] }}"/>
                 </td>
             </tr>
             <tr>

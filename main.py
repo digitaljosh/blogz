@@ -52,7 +52,7 @@ class User(db.Model):
 @app.before_request
 def require_login():
     allowed_routes = ['login', 'signup', 'index', 'all_posts', 'logout']
-    if request.endpoint not in allowed_routes and 'email' not in session:
+    if request.endpoint not in allowed_routes and 'username' not in session:
         return redirect('/login')
 
 
@@ -70,8 +70,27 @@ def logout():
 @app.route('/signup', methods=['POST', 'GET'])
 def signup():
 
-    # display all links (home, all posts, etc)
-    # display 'Signup' with form inputs for 'username', 'password' and 'verify' and 'submit'
+    if request.method == "POST":
+        username = request.form['username']
+        password = request.form['password']
+        verify = request.form['verify']
+        if len(username) < 3 or len(password) < 3:
+            flash("username/password too short")
+            return redirect('/signup')
+        if password != verify:
+            flash("passwords don't match")
+            return redirect('/signup')
+        db_username_count = User.query.filter_by(username=username).count()
+        if db_username_count > 0:
+            flash("username already taken")
+            return redirect('/signup')
+        user = User(username=username, password=password)
+        db.session.add(user)
+        db.session.commit()
+        session['username'] = user.username
+        return redirect('/newpost')
+
+
     # if input is validated and authorized store user in session and redirect to "/newpost"
 
     return render_template('signup.html')
@@ -181,7 +200,7 @@ def newpost():
 # display 'new post' with inputs for 'title' and 'post' (body) and 'submit' button
 # after 'submit' redirect to individual post /blog?id=[blog_id]
 
-    return render_template('newpost.html')
+    return render_template('newpost.html', main_title="Add a Blog Post")
 
 
 
