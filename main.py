@@ -63,7 +63,7 @@ def logout():
     # from session
     del session['username']
     flash('logged out')
-    return redirect('/')
+    return redirect('/blog')
 
 
 
@@ -119,22 +119,26 @@ def login():
 
 @app.route('/blog', methods=['GET', 'POST'])
 def all_posts():
-    # display links (home, all posts, new post, login, logout)
-    # display "blog posts!" with a list of all posts
-    # posts are displayed as Title-body-written by username
-    # Title links to individual post at /blog?id=[blog_id]
-    # username links to page of all users posts /blog?user=[username] (use singUser.html template to render)
-
-    if request.method == 'GET':
+        
+    if "id" in request.args:
         blog_id = request.args.get('id') # grabs blog id from query params
         if blog_id: # if query params exist...
-            blog = Blog.query.filter_by(id=blog_id).all() # matches query param blog id with blog post in db 
-            return render_template('singleUser.html', blog_id=blog_id, body=blog.body, main_title=blog.title)
+            blog = Blog.query.filter_by(id=blog_id).first() # matches query param blog id with blog post in db 
+            return render_template('all_blogs.html', blog=blog)
+    
+    if "user" in request.args:
+        owner_id = request.args.get('user')
+        blogs = Blog.query.filter_by(owner_id=owner_id).all()
+        one_post = Blog.query.filter_by(owner_id=owner_id).first()
+        return render_template('singleUser.html', blogs=blogs, one_post=one_post)
+
+
+    
     
     blogs = Blog.query.all() # gets all blog posts from db
     users = User.query.all() 
-    return render_template('blog.html', blogs=blogs, users=users, main_title="Blogz Posts")
-
+    return render_template('all_blogs.html', blogs=blogs, users=users, main_title="Blogz Posts")
+    
 
 
 
@@ -159,7 +163,7 @@ def index():
         if user_id: # if query params exist...
             user = User.query.filter_by(id=user_id).first() # matches query param blog id with blog post in db
             blogs = Blog.query.filter_by(owner_id=user_id).all() 
-            return render_template('singleUser.html', user=user, blogs=blogs)
+            return render_template('index.html', user=user, blogs=blogs)
 
     # TODO: Is this where I need to handle the display of single posts after /newpost?
         

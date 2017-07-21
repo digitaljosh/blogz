@@ -7,10 +7,13 @@
 
 {% block content %}
 
+
+<h3 id="main-title">{{ one_post.owner.username }}'s Posts</h3>
+
 {% for b in blogs %}
     <h2><a href="/?id={{ b.id }}">{{ b.title }}</a></h2>
     <p>{{ b.body }}</p>
-    <p>written by {{ username }}</p>
+    {#<p>written by {{ b.owner.username }}</p>#}
     <hr>
 {% endfor %}
 

@@ -7,16 +7,18 @@
     <!-- 
         displays ALL users on home page 
     -->
+
 <div id="main-box">    
     {% for u in users %}
         <ul>
-            <li><h3><a href="/?id={{ u.id }}">{{ u.username }}</a></h3></li>
+            <li><h3><a href="/blog?user={{ u.id }}">{{ u.username }}</a></h3></li>
         </ul>
     {% endfor %}
 </div>
 
-  {#
+
+  
     
-#}
+
 
 {% endblock %}
