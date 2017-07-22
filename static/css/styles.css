@@ -1,0 +1,28 @@
+#header {
+    height: 3em;
+    width: 100%em;
+    text-align: center;
+}
+span {
+    line-height: 2.5em;
+    padding: .5em;
+}
+#main-title {
+    text-align: center;
+    font-family: Cambria, Cochin, Georgia, Times, Times New Roman, serif;
+    font-size: 2em;
+}
+#newpost-title {
+    text-align: center;
+    font-family: Cambria, Cochin, Georgia, Times, Times New Roman, serif;
+    font-size: 2em;
+}
+#main-title-box, #newpost-title-box {
+    margin-top: ;
+}
+#main-box {
+    margin-top: 5em;
+}
+label, h2, p {
+    font-family: Cambria, Cochin, Georgia, Times, Times New Roman, serif;
+}  

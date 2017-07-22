@@ -1,50 +1,7 @@
-from flask import Flask, request, redirect, render_template, session, flash
-from flask_sqlalchemy import SQLAlchemy
-from hashutils import make_pw_hash, check_pw_hash
-
-app = Flask(__name__)
-app.config['DEBUG'] = True
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://blogz:blogz@localhost:8889/blogz'
-app.config['SQLALCHEMY_ECHO'] = True
-db = SQLAlchemy(app)
-app.secret_key = 't4390lib8496vc'
-
-
-
-
-class Blog(db.Model):
-
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(120))
-    body = db.Column(db.String(600))
-    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
-    def __init__(self, title, body, owner):
-        self.title = title
-        self.body = body
-        self.owner = owner
-
-    def __repr__(self):
-        return '<Blog %r>' % (self.title, self.body)
-
-
-class User(db.Model):
-
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(40))
-    pw_hash = db.Column(db.String(120))
-    blogs = db.relationship('Blog', backref='owner')
-
-    def __init__(self, username, password):
-        self.username = username
-        self.pw_hash = make_pw_hash(password)
-
-    def __repr__(self):
-        return '<User %r>' % self.username
-
-
-
-
+from flask import request, redirect, render_template, session, flash
+from app import app, db
+from models import User, Blog
+from hashutils import check_pw_hash
 
 #TODO add helper functions, clean up /home
 #TODO flash messages
@@ -59,30 +16,52 @@ def require_login():
 
 @app.route('/logout', methods=['POST'])
 def logout():
-    # handles a POST request to /logout and redirects to /blog after deleting username
-    # from session
+
+    '''
+    handles POST request and redirects to /blog 
+    after deleting username from session
+    '''
+    
     del session['username']
     flash('logged out')
     return redirect('/blog')
 
 
+def not_valid_length(username, password):
+    if username == "" or password == "":
+        return True
+    if len(username) < 3 or len(password) < 3:
+        return True
+
+def not_valid_match(password, verify):
+    if password != verify:
+        return True
+
+def is_existing_user(username):
+    db_username_count = User.query.filter_by(username=username).count()
+    if db_username_count > 0:
+        return True
 
 
 @app.route('/signup', methods=['POST', 'GET'])
 def signup():
 
+    '''
+    If 'POST' request, validate/authorize user, commit user to DB and add to session.
+    If "GET' request, display signup template.
+    '''
+
     if request.method == "POST":
         username = request.form['username']
         password = request.form['password']
         verify = request.form['verify']
-        if len(username) < 3 or len(password) < 3:
+        if not_valid_length(username, password):
             flash("username/password too short")
             return redirect('/signup')
-        if password != verify:
+        if not_valid_match(password, verify):
             flash("passwords don't match")
             return redirect('/signup')
-        db_username_count = User.query.filter_by(username=username).count()
-        if db_username_count > 0:
+        if is_existing_user(username):
             flash("username already taken")
             return redirect('/signup')
         user = User(username=username, password=password)
@@ -98,8 +77,9 @@ def signup():
 @app.route('/login', methods=['POST', 'GET'])
 def login():
 
-    # if GET request display login.html
-    # if POST request, validate and authorize and add user to session and redirect to /newpost
+    '''
+    if POST request: validate/authorize user and add user to session, redirect to /newpost
+    '''
 
     if request.method == 'POST':
         username = request.form['username']
@@ -108,10 +88,9 @@ def login():
         if user and check_pw_hash(password, user.pw_hash):
             session['username'] = username
             flash("Logged in")
-            print(session)
             return redirect('/newpost')
         else:
-            flash('User password incorrect, or user does not exist', 'error')
+            flash('User password incorrect, or user does not exist')
 
     return render_template('login.html')
 
@@ -119,29 +98,30 @@ def login():
 
 @app.route('/blog', methods=['GET', 'POST'])
 def all_posts():
+
+    '''
+    Checks query params: 
+    if 'id' found, display individual blog post
+    if 'user' found, display all posts by user
+    if no query params, display all blog posts from all users
+    '''
         
     if "id" in request.args:
-        blog_id = request.args.get('id') # grabs blog id from query params
+        blog_id = request.args.get('id') # <<< How does this get 'id'???
         if blog_id: # if query params exist...
-            blog = Blog.query.filter_by(id=blog_id).first() # matches query param blog id with blog post in db 
+            blog = Blog.query.filter_by(id=blog_id).first() 
             return render_template('all_blogs.html', blog=blog)
     
     if "user" in request.args:
-        owner_id = request.args.get('user')
+        owner_id = request.args.get('user')   # <<< How does this get 'user'???
         blogs = Blog.query.filter_by(owner_id=owner_id).all()
         one_post = Blog.query.filter_by(owner_id=owner_id).first()
         return render_template('singleUser.html', blogs=blogs, one_post=one_post)
 
 
-    
-    
-    blogs = Blog.query.all() # gets all blog posts from db
+    blogs = Blog.query.all()
     users = User.query.all() 
     return render_template('all_blogs.html', blogs=blogs, users=users, main_title="Blogz Posts")
-    
-
-
-
     
 
 
@@ -149,54 +129,21 @@ def all_posts():
 def index():
 
     '''
-    route for homepage, checks against GET or POST requests, validates user input, displays applicable errors, submits info to db if no errors
-    
+    If 'GET' requests, validates user input, displays applicable errors, submits info to db if no errors
     '''
-
-    # render index.html for this route 
-    # display links (home, all posts, new post, login, logout)
-    # display "blog users!" with a list of all users
-    # users listed are links that direct to /blog?user=[user]
-
-    if request.method == 'GET': # checks for GET request
-        user_id = request.args.get('id') # grabs blog id from query params
-        if user_id: # if query params exist...
-            user = User.query.filter_by(id=user_id).first() # matches query param blog id with blog post in db
-            blogs = Blog.query.filter_by(owner_id=user_id).all() 
-            return render_template('index.html', user=user, blogs=blogs)
-
-    # TODO: Is this where I need to handle the display of single posts after /newpost?
         
     # display ALL users
-    users = User.query.all() # gets all blog posts from db
-    return render_template('index.html', users=users, main_title="Blogz Users") # renders template on / with ALL blog posts
-        
-        
-
-    #error_title = "Please fill in the title"
-    #error_body = "Please fill in the body"
-
-    #if request.method == 'POST': # checks to see if user submitted blog post data
-        
-     #   title = request.form['title'] # grabs user input for blog title
-      #  body = request.form['body'] # grabs user input for blog body
-       # if title and body != "": # checks to see if content has been entered   
-        #    new_post = Blog(title,body) # storing blog title and body in a new variable
-         #   db.session.add(new_post) # adding new blog post to session
-          #  db.session.commit() # committing new blog post to db
-           # return redirect("/?id=" + str(new_post.id)) # redirects user to home page that only displays the newly submitted post
-
+    users = User.query.all()
+    return render_template('index.html', users=users, main_title="Blogz Users") 
 
 
 @app.route('/newpost', methods=['POST', 'GET'])
 def newpost():
 
     '''
-    route for newpost, renders newpost template
-    
+    If 'POST' request, validate input, commit to DB, display new post.
+    If 'GET' request, display newpost template.
     '''
-
-# after 'submit' redirect to individual post /blog?id=[blog_id]
 
     if request.method == 'POST':
         title = request.form['title']
@@ -211,15 +158,8 @@ def newpost():
         blog = Blog(title=title,body=body,owner=owner)
         db.session.add(blog)
         db.session.commit()
-        #blog_id = str(blog.id)
         url = '/blog?id=' + str(blog.id)
         return redirect(url)
-
-    # TODO: Need to troubleshoot /newpost, right now it's posting with all other blogs
-
-
-
-
 
     return render_template('newpost.html', main_title="Add a Blog Post")
 
