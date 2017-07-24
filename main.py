@@ -9,7 +9,7 @@ from hashutils import check_pw_hash
 
 @app.before_request
 def require_login():
-    allowed_routes = ['login', 'signup', 'index', 'all_posts', 'logout']
+    allowed_routes = ['login', 'signup', 'index', 'all_posts', 'logout', 'static']
     if request.endpoint not in allowed_routes and 'username' not in session:
         return redirect('/login')
 
@@ -108,7 +108,7 @@ def all_posts():
         
     if "id" in request.args:
         blog_id = request.args.get('id') # <<< How does this get 'id'???
-        if blog_id: # if query params exist...
+        if blog_id: 
             blog = Blog.query.filter_by(id=blog_id).first() 
             return render_template('all_blogs.html', blog=blog)
     
