@@ -3,7 +3,7 @@
 {% block content %}
 
 
-{% if blogs|length > 1 %}
+{% if blogs|length >= 1 %}
 
     {% for blog in blogs %}
         <h2><a href="/blog?id={{ blog.id }}">{{ blog.title }}</a></h2>
@@ -12,11 +12,16 @@
         <hr>
     {% endfor %}
 
-{% else %}
+{% elif blog|length == 1 %}
 
     <h2><a href="/blog?id={{ blog.id }}">{{ blog.title }}</a></h2>
     <p>{{ blog.body }}</p>
     <p>written by <a href="/blog?user={{ blog.owner_id }}">{{ blog.owner.username }}</a></p>
+
+{% else %}
+
+    <h2>No posted blogs!</h2>
+    <p>Sign up or login and start blogging!</p>
 
 {% endif %}
 
